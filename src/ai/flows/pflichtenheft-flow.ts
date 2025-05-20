@@ -85,16 +85,10 @@ export async function generatePflichtenheft(
     return createFallbackPflichtenheft(input);
   }
 
-  // Check if Google AI API key is configured
-  if (!process.env.GOOGLE_AI_API_KEY) {
-    console.warn(
-      "Google AI API key is not properly configured. Check environment variables."
-    );
-    // Return a fallback response or handle the error appropriately
-    return createFallbackPflichtenheft(input);
-  }
-
+  // Wir haben den API-Schlüssel direkt in genkit.ts gesetzt, diese Prüfung können wir überspringen
+  // und stattdessen direkt den Flow ausführen
   try {
+    console.log("Starte Generierung des Pflichtenhefts mit API-Schlüssel...");
     // Map ProjectData to ProjectDataForAI if necessary, here they are compatible
     return await generatePflichtenheftFlow(input as ProjectDataForAI);
   } catch (error) {
@@ -168,43 +162,85 @@ const prompt = ai.definePrompt({
   name: "pflichtenheftPrompt",
   input: { schema: ProjectDataSchema },
   output: { schema: PflichtenheftOutputSchema },
-  prompt: `You are an expert project manager and business analyst tasked with drafting a "Pflichtenheft" (Software Requirements Specification) for a new software project.
-Your output must be in German.
+  prompt: `Du bist ein Experte für Projektmanagement und Anforderungsanalyse und erstellst ein detailliertes Pflichtenheft (Software Requirements Specification) für ein neues Softwareprojekt.
 
-Based on the following project information provided by the user:
-Project Name: {{{projectName}}}
-Project Goal: {{{projectGoal}}}
-Main Components: {{#if mainComponents.length}}{{#each mainComponents}}- {{{this}}}{{/each}}{{else}}Not specified{{/if}}
-Stakeholders: {{#if stakeholders.length}}{{#each stakeholders}}- {{{this}}}{{/each}}{{else}}Not specified{{/if}}
-Project Phases:
+WICHTIG: Die Ausgabe MUSS in Deutsch sein und dem vorgegebenen JSON-Schema entsprechen.
+
+PROJEKTINFORMATIONEN:
+Projektname: {{{projectName}}}
+Projektziel: {{{projectGoal}}}
+Hauptkomponenten: {{#if mainComponents.length}}{{#each mainComponents}}- {{{this}}}{{/each}}{{else}}Nicht angegeben{{/if}}
+Stakeholder: {{#if stakeholders.length}}{{#each stakeholders}}- {{{this}}}{{/each}}{{else}}Nicht angegeben{{/if}}
+Projektphasen:
 {{#if phases.length}}
 {{#each phases}}
-  - Phase: {{{name}}} ({{{startDate}}} to {{{endDate}}})
+  - Phase: {{{name}}} (von {{{startDate}}} bis {{{endDate}}})
 {{/each}}
 {{else}}
-Not specified
+Nicht angegeben
 {{/if}}
 
-Please generate the content for all sections of the Pflichtenheft as defined in the output schema.
-Be comprehensive, professional, and practical. Use Markdown for formatting the 'content' field of each section.
-Refer to the following structure for guidance on what to include in each section:
+ANFORDERUNGEN AN DIE AUSGABE:
+- Erstelle für JEDEN der folgenden Abschnitte einen Eintrag im JSON-Format mit 'title' und 'content'
+- Die Inhalte müssen detailliert, professionell und praxistauglich sein
+- Verwende Markdown zur Formatierung des 'content'-Feldes
+- Alle Antworten MÜSSEN in deutscher Sprache sein
 
-- Einleitung: Titel des Projekts, Projektziel, ggf. Auftraggeber/Auftragnehmer.
-- Ziele: Definierte Ziele und Nicht-Ziele des Projekts.
-- Zielgruppen/User: Wer sind die Zielgruppen/User? Wo wird das Produkt eingesetzt?
-- Funktionalität (Was): Welche Module und Funktionen soll das Produkt haben (z.B. Login, Bezahlsystem, Userverwaltung, DB-Interaktionen)? Leite dies aus den gegebenen Projektinformationen ab und ergänze typische Funktionen.
-- Nicht funktionale Anforderungen: Serveranforderungen, Performance-Ziele, Sicherheitsaspekte, SEO (falls relevant), Schnittstellen zu anderen Systemen, Benutzbarkeit, Wartbarkeit.
-- Architektur: Grobe Beschreibung der Systemarchitektur, Module und Technologien (DB, Programmiersprachen, Frameworks).
-- Projektabschluss: Wann ist das Projekt abgeschlossen? Welche Kriterien müssen erfüllt sein? Wie wird getestet?
-- Zeitplanung: Wichtige Meilensteine und Zeitplan basierend auf den Projektphasen.
+ABSCHNITTE DES PFLICHTENHEFTS:
 
-Ensure your response strictly adheres to the JSON output schema, providing a 'title' (in German, matching the schema key description) and Markdown 'content' for each section.
-Example for a section:
-"einleitung": {
-  "title": "Einleitung",
-  "content": "### Titel\n{{{projectName}}}\n\n### Projektziel\n{{{projectGoal}}}\n\n### Auftraggeber/Auftragnehmer\n[Details zum Auftraggeber und Auftragnehmer, falls bekannt oder Standardtext einfügen]"
+1. einleitung: 
+   - Titel des Projekts
+   - Projektziel
+   - Auftraggeber/Auftragnehmer (wenn ableitbar)
+
+2. ziele:
+   - SMART-Ziele (Spezifisch, Messbar, Attraktiv, Realistisch, Terminiert)
+   - Explizite Nicht-Ziele
+
+3. zielgruppen:
+   - Wer sind die Zielgruppen/User?
+   - Wo wird das Produkt eingesetzt?
+   - Welche Bedürfnisse haben die Nutzer?
+
+4. funktionalitaet:
+   - Welche Module und Funktionen soll das Produkt haben?
+   - Funktionale Anforderungen basierend auf den angegebenen Hauptkomponenten
+   - Typische Module wie Login, Bezahlsystem, Userverwaltung, DB-Interaktionen
+
+5. nichtFunktionaleAnforderungen:
+   - Serveranforderungen, Performance-Ziele
+   - Sicherheitsaspekte, Datenschutz
+   - Usability, Wartbarkeit
+   - Schnittstellen zu anderen Systemen
+
+6. architektur:
+   - Systemarchitektur im Überblick
+   - Module und ihre Interaktionen
+   - Eingesetzte Technologien (DB, Programmiersprachen, Frameworks)
+
+7. projektabschluss:
+   - Abnahmekriterien
+   - Lieferumfang
+   - Teststrategie (Unit Tests, Integrationstests, Abnahmetests)
+
+8. zeitplanung:
+   - Meilensteine basierend auf den angegebenen Phasen
+   - Zeitplan und Abhängigkeiten zwischen Aufgaben
+
+AUSGABEFORMAT (JSON):
+{
+  "einleitung": {
+    "title": "Einleitung",
+    "content": "### Titel\\n{{{projectName}}}\\n\\n### Projektziel\\n{{{projectGoal}}}\\n\\n### Auftraggeber/Auftragnehmer\\n[Details zum Auftraggeber und Auftragnehmer, falls bekannt]"
+  },
+  "ziele": {
+    "title": "Ziele",
+    "content": "### Ziele\\n- [Spezifisches Ziel 1]\\n- [Spezifisches Ziel 2]\\n\\n### Nicht-Ziele\\n- [Nicht-Ziel 1]\\n- [Nicht-Ziel 2]"
+  },
+  // ... weitere Abschnitte analog formatiert
 }
-Fill all sections with meaningful content.
+
+Stelle sicher, dass alle 8 Abschnitte vollständig ausgefüllt sind und sinnvolle Inhalte enthalten.
 `,
 });
 
@@ -215,16 +251,63 @@ const generatePflichtenheftFlow = ai.defineFlow(
     outputSchema: PflichtenheftOutputSchema,
   },
   async (input) => {
-    // API key is already configured in the genkit.ts file
-    // and only accessed server-side
-    const { output } = await prompt(input);
+    try {
+      // API key is already configured in the genkit.ts file
+      // and only accessed server-side
+      const { output } = await prompt(input);
 
-    if (!output) {
-      throw new Error(
-        "AI did not return an output for Pflichtenheft generation."
-      );
+      if (!output) {
+        console.error("AI returned null or undefined output");
+        throw new Error(
+          "AI did not return an output for Pflichtenheft generation."
+        );
+      }
+
+      console.log("AI returned output structure:", Object.keys(output));
+
+      // Ensure all required sections exist
+      const requiredSections = [
+        "einleitung",
+        "ziele",
+        "zielgruppen",
+        "funktionalitaet",
+        "nichtFunktionaleAnforderungen",
+        "architektur",
+        "projektabschluss",
+        "zeitplanung",
+      ];
+
+      for (const section of requiredSections) {
+        if (!output[section]) {
+          console.error(`Missing required section in output: ${section}`);
+          output[section] = {
+            title:
+              section === "einleitung"
+                ? "Einleitung"
+                : section === "ziele"
+                ? "Ziele"
+                : section === "zielgruppen"
+                ? "Zielgruppen/User"
+                : section === "funktionalitaet"
+                ? "Funktionalität"
+                : section === "nichtFunktionaleAnforderungen"
+                ? "Nicht funktionale Anforderungen"
+                : section === "architektur"
+                ? "Architektur"
+                : section === "projektabschluss"
+                ? "Projektabschluss"
+                : section === "zeitplanung"
+                ? "Zeitplanung"
+                : "Fehlt",
+            content: `Diese Sektion wurde vom AI-Dienst nicht korrekt generiert. Bitte überprüfen Sie die API-Konfiguration.`,
+          };
+        }
+      }
+
+      return output;
+    } catch (error) {
+      console.error("Error in generatePflichtenheftFlow:", error);
+      throw error;
     }
-
-    return output;
   }
 );

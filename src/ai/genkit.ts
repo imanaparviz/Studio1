@@ -7,7 +7,8 @@ let GOOGLE_API_KEY: string | undefined;
 
 // Only access environment variables in server context
 if (typeof window === "undefined") {
-  GOOGLE_API_KEY = process.env.GOOGLE_AI_API_KEY || env.aiServiceKey;
+  // Direkt eingegebener API-Schlüssel (nur für Testzwecke)
+  GOOGLE_API_KEY = "AIzaSyCk814Ok0MOa_C9_u2FiJx5WX_spaHoeUQ";
 
   if (!GOOGLE_API_KEY) {
     console.warn(
@@ -22,5 +23,6 @@ export const ai = genkit({
       apiKey: GOOGLE_API_KEY || "",
     }),
   ],
-  model: "googleai/gemini-2.0-flash", // Default model, can be overridden in specific calls
+  // Verwende gemini-2.0-flash mit niedrigeren Quotas aber neuerer Version
+  model: "googleai/gemini-2.0-flash",
 });
