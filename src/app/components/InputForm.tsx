@@ -15,10 +15,10 @@ interface InputFormProps {
 }
 
 export function InputForm({ onSubmit, isLoading }: InputFormProps) {
-  const [projectName, setProjectName] = useState("My Awesome Project");
-  const [projectGoal, setProjectGoal] = useState("To create something amazing!");
-  const [mainComponentsStr, setMainComponentsStr] = useState("Backend, Frontend, Database");
-  const [stakeholdersStr, setStakeholdersStr] = useState("Client, Dev Team, QA");
+  const [projectName, setProjectName] = useState("Mein großartiges Projekt");
+  const [projectGoal, setProjectGoal] = useState("Etwas Erstaunliches erschaffen!");
+  const [mainComponentsStr, setMainComponentsStr] = useState("Backend, Frontend, Datenbank");
+  const [stakeholdersStr, setStakeholdersStr] = useState("Kunde, Entwicklungsteam, QS");
   
   const [phases, setPhases] = useState<ProjectPhase[]>([]);
   const [isMounted, setIsMounted] = useState(false);
@@ -27,8 +27,8 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
     setIsMounted(true);
     // Initialize with default phases only on client-side to use crypto.randomUUID
     setPhases([
-      { id: crypto.randomUUID(), name: "Planning", startDate: "2024-01-01", endDate: "2024-01-15" },
-      { id: crypto.randomUUID(), name: "Development", startDate: "2024-01-16", endDate: "2024-03-15" },
+      { id: crypto.randomUUID(), name: "Planung", startDate: "2024-01-01", endDate: "2024-01-15" },
+      { id: crypto.randomUUID(), name: "Entwicklung", startDate: "2024-01-16", endDate: "2024-03-15" },
     ]);
   }, []);
 
@@ -79,47 +79,47 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <Label htmlFor="projectName" className="mb-1 block">Project Name</Label>
+        <Label htmlFor="projectName" className="mb-1 block">Projektname</Label>
         <Input
           id="projectName"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
-          placeholder="e.g., E-commerce Platform"
+          placeholder="z.B. E-Commerce Plattform"
           required
         />
       </div>
       <div>
-        <Label htmlFor="projectGoal" className="mb-1 block">Project Goal</Label>
+        <Label htmlFor="projectGoal" className="mb-1 block">Projektziel</Label>
         <Textarea
           id="projectGoal"
           value={projectGoal}
           onChange={(e) => setProjectGoal(e.target.value)}
-          placeholder="e.g., To launch a new online store"
+          placeholder="z.B. Einen neuen Online-Shop starten"
           rows={3}
         />
       </div>
       <div>
-        <Label htmlFor="mainComponents" className="mb-1 block">Main Components (comma-separated)</Label>
+        <Label htmlFor="mainComponents" className="mb-1 block">Hauptkomponenten (kommagetrennt)</Label>
         <Input
           id="mainComponents"
           value={mainComponentsStr}
           onChange={(e) => setMainComponentsStr(e.target.value)}
-          placeholder="e.g., API, Web App, Mobile App"
+          placeholder="z.B. API, Web App, Mobile App"
         />
       </div>
       <div>
-        <Label htmlFor="stakeholders" className="mb-1 block">Stakeholders (comma-separated)</Label>
+        <Label htmlFor="stakeholders" className="mb-1 block">Stakeholder (kommagetrennt)</Label>
         <Input
           id="stakeholders"
           value={stakeholdersStr}
           onChange={(e) => setStakeholdersStr(e.target.value)}
-          placeholder="e.g., Product Owner, Marketing Team, Users"
+          placeholder="z.B. Product Owner, Marketing Team, Benutzer"
         />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Project Phases</CardTitle>
+          <CardTitle className="text-xl">Projektphasen</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {phases.map((phase, index) => (
@@ -131,7 +131,7 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => handleRemovePhase(phase.id)}
-                  aria-label="Remove phase"
+                  aria-label="Phase entfernen"
                   className="text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -143,13 +143,13 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
                   id={`phaseName-${phase.id}`}
                   value={phase.name}
                   onChange={(e) => handlePhaseChange(phase.id, "name", e.target.value)}
-                  placeholder="e.g., Design Sprint"
+                  placeholder="z.B. Design Sprint"
                   required
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`phaseStart-${phase.id}`} className="mb-1 block text-sm">Start Date</Label>
+                  <Label htmlFor={`phaseStart-${phase.id}`} className="mb-1 block text-sm">Startdatum</Label>
                   <Input
                     id={`phaseStart-${phase.id}`}
                     type="date"
@@ -159,7 +159,7 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
                   />
                 </div>
                 <div>
-                  <Label htmlFor={`phaseEnd-${phase.id}`} className="mb-1 block text-sm">End Date</Label>
+                  <Label htmlFor={`phaseEnd-${phase.id}`} className="mb-1 block text-sm">Enddatum</Label>
                   <Input
                     id={`phaseEnd-${phase.id}`}
                     type="date"
@@ -172,7 +172,7 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
             </div>
           ))}
           <Button type="button" variant="outline" onClick={handleAddPhase} className="w-full mt-2">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Phase
+            <PlusCircle className="mr-2 h-4 w-4" /> Phase hinzufügen
           </Button>
         </CardContent>
       </Card>
@@ -181,7 +181,7 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
         {isLoading ? (
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
         ) : (
-          "Generate Diagrams"
+          "Inhalte generieren"
         )}
       </Button>
     </form>
