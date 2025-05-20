@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Trash2, Loader2 } from "lucide-react";
+import { useLanguage } from "@/app/providers/LanguageProvider";
 import type { ProjectData, ProjectPhase } from "@/types";
 
 interface InputFormProps {
@@ -15,11 +16,26 @@ interface InputFormProps {
 }
 
 export function InputForm({ onSubmit, isLoading }: InputFormProps) {
-  const [projectName, setProjectName] = useState("Mein großartiges Projekt");
-  const [projectGoal, setProjectGoal] = useState("Etwas Erstaunliches erschaffen!");
-  const [mainComponentsStr, setMainComponentsStr] = useState("Backend, Frontend, Datenbank");
-  const [stakeholdersStr, setStakeholdersStr] = useState("Kunde, Entwicklungsteam, QS");
-  
+  const { t, language } = useLanguage();
+  const [projectName, setProjectName] = useState(
+    language === "de" ? "Mein großartiges Projekt" : "My awesome project"
+  );
+  const [projectGoal, setProjectGoal] = useState(
+    language === "de"
+      ? "Etwas Erstaunliches erschaffen!"
+      : "Create something amazing!"
+  );
+  const [mainComponentsStr, setMainComponentsStr] = useState(
+    language === "de"
+      ? "Backend, Frontend, Datenbank"
+      : "Backend, Frontend, Database"
+  );
+  const [stakeholdersStr, setStakeholdersStr] = useState(
+    language === "de"
+      ? "Kunde, Entwicklungsteam, QS"
+      : "Customer, Development team, QA"
+  );
+
   const [phases, setPhases] = useState<ProjectPhase[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -27,22 +43,38 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
     setIsMounted(true);
     // Initialize with default phases only on client-side to use crypto.randomUUID
     setPhases([
-      { id: crypto.randomUUID(), name: "Planung", startDate: "2024-01-01", endDate: "2024-01-15" },
-      { id: crypto.randomUUID(), name: "Entwicklung", startDate: "2024-01-16", endDate: "2024-03-15" },
+      {
+        id: crypto.randomUUID(),
+        name: language === "de" ? "Planung" : "Planning",
+        startDate: "2024-01-01",
+        endDate: "2024-01-15",
+      },
+      {
+        id: crypto.randomUUID(),
+        name: language === "de" ? "Entwicklung" : "Development",
+        startDate: "2024-01-16",
+        endDate: "2024-03-15",
+      },
     ]);
-  }, []);
-
+  }, [language]);
 
   const handleAddPhase = () => {
     if (!isMounted) return;
-    setPhases([...phases, { id: crypto.randomUUID(), name: "", startDate: "", endDate: "" }]);
+    setPhases([
+      ...phases,
+      { id: crypto.randomUUID(), name: "", startDate: "", endDate: "" },
+    ]);
   };
 
   const handleRemovePhase = (id: string) => {
     setPhases(phases.filter((phase) => phase.id !== id));
   };
 
-  const handlePhaseChange = (id: string, field: keyof Omit<ProjectPhase, 'id'>, value: string) => {
+  const handlePhaseChange = (
+    id: string,
+    field: keyof Omit<ProjectPhase, "id">,
+    value: string
+  ) => {
     setPhases(
       phases.map((phase) =>
         phase.id === id ? { ...phase, [field]: value } : phase
@@ -56,8 +88,14 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const data: ProjectData = {
       projectName,
       projectGoal,
-      mainComponents: mainComponentsStr.split(",").map((s) => s.trim()).filter(Boolean),
-      stakeholders: stakeholdersStr.split(",").map((s) => s.trim()).filter(Boolean),
+      mainComponents: mainComponentsStr
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      stakeholders: stakeholdersStr
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       phases,
     };
     onSubmit(data);
@@ -79,53 +117,82 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <Label htmlFor="projectName" className="mb-1 block">Projektname</Label>
+        <Label htmlFor="projectName" className="mb-1 block">
+          {t("form.projectName")}
+        </Label>
         <Input
           id="projectName"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
-          placeholder="z.B. E-Commerce Plattform"
+          placeholder={
+            language === "de"
+              ? "z.B. E-Commerce Plattform"
+              : "e.g. E-Commerce Platform"
+          }
           required
         />
       </div>
       <div>
-        <Label htmlFor="projectGoal" className="mb-1 block">Projektziel</Label>
+        <Label htmlFor="projectGoal" className="mb-1 block">
+          {t("form.projectGoal")}
+        </Label>
         <Textarea
           id="projectGoal"
           value={projectGoal}
           onChange={(e) => setProjectGoal(e.target.value)}
-          placeholder="z.B. Einen neuen Online-Shop starten"
+          placeholder={
+            language === "de"
+              ? "z.B. Einen neuen Online-Shop starten"
+              : "e.g. Launch a new online shop"
+          }
           rows={3}
         />
       </div>
       <div>
-        <Label htmlFor="mainComponents" className="mb-1 block">Hauptkomponenten (kommagetrennt)</Label>
+        <Label htmlFor="mainComponents" className="mb-1 block">
+          {t("form.mainComponents")}
+        </Label>
         <Input
           id="mainComponents"
           value={mainComponentsStr}
           onChange={(e) => setMainComponentsStr(e.target.value)}
-          placeholder="z.B. API, Web App, Mobile App"
+          placeholder={
+            language === "de"
+              ? "z.B. API, Web App, Mobile App"
+              : "e.g. API, Web App, Mobile App"
+          }
         />
       </div>
       <div>
-        <Label htmlFor="stakeholders" className="mb-1 block">Stakeholder (kommagetrennt)</Label>
+        <Label htmlFor="stakeholders" className="mb-1 block">
+          {t("form.stakeholders")}
+        </Label>
         <Input
           id="stakeholders"
           value={stakeholdersStr}
           onChange={(e) => setStakeholdersStr(e.target.value)}
-          placeholder="z.B. Product Owner, Marketing Team, Benutzer"
+          placeholder={
+            language === "de"
+              ? "z.B. Product Owner, Marketing Team, Benutzer"
+              : "e.g. Product Owner, Marketing Team, Users"
+          }
         />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Projektphasen</CardTitle>
+          <CardTitle className="text-xl">{t("form.phases")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {phases.map((phase, index) => (
-            <div key={phase.id} className="p-4 border rounded-lg space-y-3 bg-muted/30 shadow-sm">
+            <div
+              key={phase.id}
+              className="p-4 border rounded-lg space-y-3 bg-muted/30 shadow-sm"
+            >
               <div className="flex justify-between items-center mb-2">
-                <p className="font-semibold text-md">Phase {index + 1}</p>
+                <p className="font-semibold text-md">
+                  {t("form.phase")} {index + 1}
+                </p>
                 <Button
                   type="button"
                   variant="ghost"
@@ -138,50 +205,84 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
                 </Button>
               </div>
               <div>
-                <Label htmlFor={`phaseName-${phase.id}`} className="mb-1 block text-sm">Name</Label>
+                <Label
+                  htmlFor={`phaseName-${phase.id}`}
+                  className="mb-1 block text-sm"
+                >
+                  {t("form.phaseName")}
+                </Label>
                 <Input
                   id={`phaseName-${phase.id}`}
                   value={phase.name}
-                  onChange={(e) => handlePhaseChange(phase.id, "name", e.target.value)}
-                  placeholder="z.B. Design Sprint"
+                  onChange={(e) =>
+                    handlePhaseChange(phase.id, "name", e.target.value)
+                  }
+                  placeholder={
+                    language === "de"
+                      ? "z.B. Design Sprint"
+                      : "e.g. Design Sprint"
+                  }
                   required
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`phaseStart-${phase.id}`} className="mb-1 block text-sm">Startdatum</Label>
+                  <Label
+                    htmlFor={`phaseStart-${phase.id}`}
+                    className="mb-1 block text-sm"
+                  >
+                    {t("form.startDate")}
+                  </Label>
                   <Input
                     id={`phaseStart-${phase.id}`}
                     type="date"
                     value={phase.startDate}
-                    onChange={(e) => handlePhaseChange(phase.id, "startDate", e.target.value)}
+                    onChange={(e) =>
+                      handlePhaseChange(phase.id, "startDate", e.target.value)
+                    }
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor={`phaseEnd-${phase.id}`} className="mb-1 block text-sm">Enddatum</Label>
+                  <Label
+                    htmlFor={`phaseEnd-${phase.id}`}
+                    className="mb-1 block text-sm"
+                  >
+                    {t("form.endDate")}
+                  </Label>
                   <Input
                     id={`phaseEnd-${phase.id}`}
                     type="date"
                     value={phase.endDate}
-                    onChange={(e) => handlePhaseChange(phase.id, "endDate", e.target.value)}
+                    onChange={(e) =>
+                      handlePhaseChange(phase.id, "endDate", e.target.value)
+                    }
                     required
                   />
                 </div>
               </div>
             </div>
           ))}
-          <Button type="button" variant="outline" onClick={handleAddPhase} className="w-full mt-2">
-            <PlusCircle className="mr-2 h-4 w-4" /> Phase hinzufügen
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddPhase}
+            className="w-full mt-2"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" /> {t("form.addPhase")}
           </Button>
         </CardContent>
       </Card>
 
-      <Button type="submit" disabled={isLoading} className="w-full py-3 text-base">
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className="w-full py-3 text-base"
+      >
         {isLoading ? (
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
         ) : (
-          "Inhalte generieren"
+          t("form.generate")
         )}
       </Button>
     </form>
