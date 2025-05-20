@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -5,9 +6,9 @@ import { InputForm } from "@/app/components/InputForm";
 import { DiagramDisplay } from "@/app/components/DiagramDisplay";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Lightbulb, BarChart3, AlertTriangle, Info, BookText, Loader2 as PageLoaderIcon } from "lucide-react"; // Renamed Loader2 to avoid conflict
+import { Lightbulb, BarChart3, AlertTriangle, Info, BookText, Loader2 as PageLoaderIcon } from "lucide-react";
 import type { ProjectData, DiagramContent, PflichtenheftOutput, PflichtenheftSection } from "@/types";
-import { generatePflichtenheft } from "@/ai/flows/pflichtenheft-flow"; // Import the AI flow
+import { generatePflichtenheft } from "@/ai/flows/pflichtenheft-flow";
 
 export default function HomePage() {
   const [projectData, setProjectData] = useState<ProjectData | null>(null);
@@ -17,14 +18,15 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleFormSubmit = async (data: ProjectData) => {
+    console.log("Form submitted with data:", data);
     setIsLoading(true);
     setError(null);
     setProjectData(data);
-    setDiagrams(null); // Clear previous diagrams
-    setPflichtenheftContent(null); // Clear previous Pflichtenheft
+    setDiagrams(null);
+    setPflichtenheftContent(null);
 
     try {
-      // Diagram generation (synchronous)
+      console.log("Generating diagrams (client-side)...");
       let mindmapMd = `# ${data.projectName || "My Project"}\n`;
       if (data.projectGoal) mindmapMd += `## Goal: ${data.projectGoal}\n`;
 
@@ -54,8 +56,8 @@ gantt
 `;
         data.phases.forEach((phase, index) => {
           if (phase.name && phase.startDate && phase.endDate) {
-            const taskName = phase.name.replace(/[^a-zA-Z0-9\s-_]/g, "").trim() || `Phase ${index + 1}`;
-            const taskId = taskName.replace(/\s+/g, "_").slice(0, 50) || `task_${index}`;
+            const taskName = phase.name.replace(/[^a-zA-Z0-9\\s-_]/g, "").trim() || `Phase ${index + 1}`;
+            const taskId = taskName.replace(/\\s+/g, "_").slice(0, 50) || `task_${index}`;
             roadmapMm += `  section ${taskName}\n`;
             roadmapMm += `    ${taskName} :${taskId}_${index}, ${phase.startDate}, ${phase.endDate}\n`;
           }
@@ -76,17 +78,23 @@ gantt
         mindmapMarkdown: mindmapMd,
         roadmapMermaid: roadmapMm,
       };
-
-      // Pflichtenheft generation (asynchronous)
-      const pflichtenheftResult = await generatePflichtenheft(data);
-
+      console.log("Diagrams generated:", diagramResults);
       setDiagrams(diagramResults);
+
+      console.log("Calling generatePflichtenheft AI flow...");
+      const pflichtenheftResult = await generatePflichtenheft(data);
+      console.log("Pflichtenheft generated:", pflichtenheftResult);
+      
+      if (!pflichtenheftResult) {
+        throw new Error("Die KI hat keine Ausgabe für das Pflichtenheft zurückgegeben.");
+      }
       setPflichtenheftContent(pflichtenheftResult);
 
     } catch (e: any) {
-      setError("Fehler beim Generieren der Inhalte: " + e.message);
-      console.error(e);
+      console.error("Error during content generation:", e);
+      setError(`Fehler beim Generieren der Inhalte: ${e.message}${e.stack ? `\nStack: ${e.stack}` : ''}`);
     } finally {
+      console.log("Finished content generation process.");
       setIsLoading(false);
     }
   };
@@ -128,7 +136,7 @@ gantt
               <AlertTriangle className="h-5 w-5 mr-2 mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold">Fehler beim Generieren</p>
-                <p className="text-sm">{error}</p>
+                <pre className="text-sm whitespace-pre-wrap">{error}</pre>
               </div>
             </div>
           )}
@@ -210,7 +218,6 @@ gantt
               </CardHeader>
               <CardContent className="space-y-6">
                 {Object.entries(pflichtenheftContent).map(([key, section]) => {
-                  // Type guard to ensure section is a valid PflichtenheftSection
                   const currentSection = section as PflichtenheftSection;
                   if (currentSection && typeof currentSection === 'object' && 'title' in currentSection && 'content' in currentSection) {
                     return (
@@ -218,7 +225,7 @@ gantt
                         <h3 className="text-xl font-semibold mb-3 text-primary">{currentSection.title}</h3>
                         <div
                           className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap"
-                          dangerouslySetInnerHTML={{ __html: currentSection.content.replace(/```(\w+)?\n([\s\S]*?)\n```/g, '<pre class="bg-muted/50 p-3 rounded-md overflow-x-auto"><code>$2</code></pre>').replace(/`([^`]+)`/g, '<code class="bg-muted/50 px-1 rounded text-sm">$1</code>').replace(/\n/g, '<br />') }}
+                          dangerouslySetInnerHTML={{ __html: currentSection.content.replace(/```(\\w+)?\\n([\\s\\S]*?)\\n```/g, '<pre class="bg-muted/50 p-3 rounded-md overflow-x-auto"><code>$2</code></pre>').replace(/`([^`]+)`/g, '<code class="bg-muted/50 px-1 rounded text-sm">$1</code>').replace(/\\n/g, '<br />') }}
                         />
                       </div>
                     );
