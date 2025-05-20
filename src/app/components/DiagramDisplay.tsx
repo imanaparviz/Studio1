@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useEffect, useRef, useState }from "react";
 import { Transformer } from "markmap-lib";
 import { Markmap } from "markmap-view";
 import mermaid from "mermaid";
-import { optimize } from 'svgo';
+// Removed: import { optimize } from 'svgo';
 import { ClientOnly } from "./ClientOnly";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,15 +141,9 @@ export function DiagramDisplay({ title, type, content, filenamePrefix = "diagram
       return;
     }
 
-    const optimizedSvgResult = optimize(svgString, {
-        multipass: true,
-        plugins: [
-            { name: 'preset-default' },
-            { name: 'removeXMLProcInst' },
-            { name: 'removeDoctype' },
-        ]
-    });
-    const optimizedSvg = optimizedSvgResult.data;
+    // SVGO optimization moved to server-side API route
+    // const optimizedSvgResult = optimize(svgString, { /* ... */ });
+    // const optimizedSvg = optimizedSvgResult.data;
 
 
     if (format === "png") setIsExportingPng(true);
@@ -159,7 +154,7 @@ export function DiagramDisplay({ title, type, content, filenamePrefix = "diagram
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          svg_content: optimizedSvg,
+          svg_content: svgString, // Send the raw SVG string
           format: format,
           filename: filenamePrefix,
         }),

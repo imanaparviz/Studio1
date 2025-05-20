@@ -1,6 +1,7 @@
+
 import { NextResponse, type NextRequest } from 'next/server';
 import sharp from 'sharp';
-// svgo is used client-side, no need to import server-side if client optimizes first
+import { optimize } from 'svgo'; // Added SVGO import
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No SVG content received' }, { status: 400 });
     }
     
-    const svgBuffer = Buffer.from(svg_content);
+    // Optimize SVG content using SVGO on the server
+    const optimizedSvgResult = optimize(svg_content, {
+        multipass: true,
+        plugins: [
+            { name: 'preset-default' },
+            { name: 'removeXMLProcInst' },
+            { name: 'removeDoctype' },
+        ]
+    });
+    const optimizedSvg = optimizedSvgResult.data;
+
+    const svgBuffer = Buffer.from(optimizedSvg); // Use optimized SVG for buffer
 
     let outputBuffer: Buffer;
     let mimetype: string;
