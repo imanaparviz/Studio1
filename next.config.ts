@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // For Vercel deployments, sharp is usually handled automatically.
+  // If deploying elsewhere or facing issues, you might need:
+  // experimental: {
+  //   serverComponentsExternalPackages: ['sharp', 'svgo'], // svgo is used client-side, sharp server-side
+  // },
 };
 
 export default nextConfig;
